@@ -10,6 +10,7 @@ public class SystemManager : MonoBehaviour
     [SerializeField] float cameraAngSpeed = 90.0f;
 
     [Header("Spawner")]
+    [SerializeField] ExplosionManager explosionManager;
     [SerializeField] List<Orbit> orbitList = new List<Orbit>();
     [SerializeField] GameObject planetPrefab;
     [SerializeField] Transform spawnerParent;
@@ -96,6 +97,7 @@ public class SystemManager : MonoBehaviour
 
         if (orbitList.Remove(orbit))
         {
+            explosionManager.PlayExplosion(orbit.transform.position);
             orbit.meshRenderer.enabled = false;
             orbit.isDestroyed = true;
             orbit.destroyDelayed.AutoDestroy(1.2f);

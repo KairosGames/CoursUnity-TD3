@@ -3,28 +3,28 @@ using UnityEngine;
 public class Orbit : MonoBehaviour
 {
     [SerializeField] public SystemManager manager;
-    [SerializeField] GameObject nameCanva;
     [SerializeField] public Transform pivot;
     [SerializeField] public float angularSpeed = 20f;
     [SerializeField] public float selfRotationSpeed = 30f;
     [SerializeField] public bool isPlanet;
+    [SerializeField] public string planetName;
 
-    Material material;
-
-    [HideInInspector] public bool isRotating = true;
     [HideInInspector] public Transform cameraTransform;
+    [HideInInspector] public MeshRenderer meshRenderer;
+    [HideInInspector] public AutoDestruction destroyDelayed;
+    [HideInInspector] public bool isRotating = true;
+    [HideInInspector] public bool isDestroyed = false;
+
 
     private void Start()
     {
-        material = GetComponent<MeshRenderer>().material;
+        meshRenderer = GetComponent<MeshRenderer>();
+        destroyDelayed = GetComponent<AutoDestruction>();
     }
 
     void Update()
     {
-        if (nameCanva.activeInHierarchy && cameraTransform != null)
-            nameCanva.transform.LookAt(nameCanva.transform.position  + (nameCanva.transform.position - cameraTransform.position).normalized);
-
-        if (!isRotating)
+        if (!isRotating || isDestroyed)
             return;
 
         if (pivot != null)
@@ -35,14 +35,14 @@ public class Orbit : MonoBehaviour
 
     void OnMouseEnter()
     {
-        material.EnableKeyword("_EMISSION");
-        nameCanva.SetActive(true);
+        meshRenderer.material.EnableKeyword("_EMISSION");
+        manager.tooltip.LoadDataAndActivate(planetName, Vector3.Distance(transform.position, pivot.position));
     }
 
     void OnMouseExit()
     {
-        material.DisableKeyword("_EMISSION");
-        nameCanva.SetActive(false);
+        meshRenderer.material.DisableKeyword("_EMISSION");
+        manager.tooltip.AutoDisable();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -51,10 +51,10 @@ public class Orbit : MonoBehaviour
         if (orbit != null)
         {
             if (!orbit.isPlanet)
-                Destroy(orbit.gameObject);
+                manager.DestroyOrbit(orbit);
 
             if (!isPlanet)
-                Destroy(gameObject);
+                manager.DestroyOrbit(this);
         }
     }
 }
